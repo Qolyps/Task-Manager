@@ -11,7 +11,7 @@ namespace ToDoList
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             bool isOpen = true;
             ManagerTask manager = new ManagerTask();
@@ -29,16 +29,16 @@ namespace ToDoList
                 switch (userInput)
                 {
                     case "1":
-                        manager.CreateTask();
+                        await manager.CreateTaskAsync();
                         break;
                     case "2":
-                        manager.DeleteTask();
+                        await manager.DeleteTaskAsync();
                         break;
                     case "3":
-                        manager.ShowAllTasks();
+                        await manager.ShowAllTasksAsync();
                         break;
                     case "4":
-                        manager.FindTask();
+                        await manager.FindTaskAsync();
                         break;
                     case "5":
                         isOpen = false;
@@ -86,7 +86,7 @@ namespace ToDoList
 
     }
 
-    public abstract class Task : IActive
+    public abstract class BaseTask : IActive
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -95,7 +95,7 @@ namespace ToDoList
         public TypeTask TypeTask { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public Task(int id, string title, string description, bool isCompleted, DateTime createdAt, TypeTask typeTask)
+        public BaseTask(int id, string title, string description, bool isCompleted, DateTime createdAt, TypeTask typeTask)
         {
             Id = id;
             Title = title;
@@ -106,13 +106,13 @@ namespace ToDoList
         }
     }
 
-    public class PersonalTask : Task
+    public class PersonalTask : BaseTask
     {
         public PersonalTask(int id, string title, string description, bool isCompleted, DateTime createdAt, TypeTask typeTask)
             : base(id, title, description, isCompleted, createdAt, typeTask) { }
     }
 
-    public class TeamTask : Task
+    public class TeamTask : BaseTask
     {
         public TeamTask(int id, string title, string description, bool isCompleted, DateTime createdAt, TypeTask typeTask)
             : base(id, title, description, isCompleted, createdAt, typeTask) { }
@@ -122,7 +122,7 @@ namespace ToDoList
     {
         private ToDoContext _context = new ToDoContext();
 
-        public void CreateTask()
+        public async Task CreateTaskAsync()
         {
             try
             {
@@ -142,12 +142,12 @@ namespace ToDoList
                     Title = inputTitle,
                     Description = inputDescription,
                     IsCompleted = inputIsCompleted,
-                    CreatedDate = inputDate,
+                    CreatedDate = inputDate,    
                     TaskType = inputTypeTask,
                 };
 
                 _context.Tasks.Add(newTask);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 Console.WriteLine("The task has been created.");
             }
             catch (Exception ex)
@@ -156,16 +156,16 @@ namespace ToDoList
             }
         }
 
-        public void DeleteTask()
+        public async Task DeleteTaskAsync()
         {
             Console.Write("Enter the taks ID to delete: ");
             int inputDelete = Convert.ToInt32(Console.ReadLine());
-            var deleteTask = _context.Tasks.Find(inputDelete);
+            var deleteTask = await _context.Tasks.FindAsync(inputDelete);
 
             if (deleteTask != null)
             {
                 _context.Tasks.Remove(deleteTask);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 Console.WriteLine("Task deleted successfully.");
             }
             else
@@ -174,9 +174,9 @@ namespace ToDoList
             }
         }
 
-        public void ShowAllTasks()
+        public async Task ShowAllTasksAsync()
         {
-            var tasks = _context.Tasks.ToList();
+            var tasks = await _context.Tasks.ToListAsync();
             if (tasks.Any())
             {
                 foreach (var task in tasks)
@@ -190,18 +190,17 @@ namespace ToDoList
             }
         }
 
-        public void FindTask()
+        public async Task FindTaskAsync()
         {
             Console.Write("Enter the title of the task: ");
             string inputTask = Console.ReadLine();
 
-            var resultTask = _context.Tasks.Where(t => t.Title.Contains(inputTask)).ToList();
+            var resultTask = await _context.Tasks.Where(t => t.Title.Contains(inputTask)).ToListAsync();
 
             if (resultTask.Any())
             {
                 foreach (var task in resultTask)
                 {
-
                     Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
                 }
             }
