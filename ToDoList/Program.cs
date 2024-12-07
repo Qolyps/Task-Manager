@@ -42,7 +42,7 @@ namespace ToDoList
                         await manager.FindTaskAsync();
                         break;
                     case "5":
-                        manager.SortTask();
+                        await manager.SortTaskAsync();
                         break;
                     case "6":
                         isOpen = false;
@@ -212,11 +212,11 @@ namespace ToDoList
             }
         }
 
-        public void SortTask()
+        public async Task SortTaskAsync()
         {
             Console.Write("1 - Sort by completed (true/false): ");
             var sortCompleted = Convert.ToBoolean(Console.ReadLine());
-            var resultCompleted = _context.Tasks.Where(t => t.IsCompleted == sortCompleted).ToList();
+            var resultCompleted =  await _context.Tasks.Where(t => t.IsCompleted == sortCompleted).ToListAsync();
 
             if (resultCompleted.Any())
             {
