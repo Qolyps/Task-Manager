@@ -23,8 +23,9 @@ namespace ToDoList
                 Console.WriteLine("2 - Delete a task.");
                 Console.WriteLine("3 - Show all tasks.");
                 Console.WriteLine("4 - Find a task.");
-                Console.WriteLine("5 - Exit.");
-                Console.Write("Select the command: ");
+                Console.WriteLine("5 - Sort tasks.");
+                Console.WriteLine("6 - Exit.");
+                Console.Write("\nSelect the command: ");
                 string userInput = Console.ReadLine();
                 switch (userInput)
                 {
@@ -41,6 +42,9 @@ namespace ToDoList
                         await manager.FindTaskAsync();
                         break;
                     case "5":
+                        manager.SortTask();
+                        break;
+                    case "6":
                         isOpen = false;
                         break;
                     default:
@@ -83,7 +87,6 @@ namespace ToDoList
 
     public interface IActive
     {
-
     }
 
     public abstract class BaseTask : IActive
@@ -132,8 +135,7 @@ namespace ToDoList
                 string inputDescription = Console.ReadLine();
                 Console.Write("Select the task status (true/false): ");
                 bool inputIsCompleted = Convert.ToBoolean(Console.ReadLine());
-                Console.Write("Enter the creation date: ");
-                DateTime inputDate = Convert.ToDateTime(Console.ReadLine());
+                DateTime dateCreate = DateTime.Now;
                 Console.Write("Select the type task (0 - Personal / 1 - Team): ");
                 TypeTask inputTypeTask = (TypeTask)Enum.Parse(typeof(TypeTask), Console.ReadLine());
 
@@ -142,7 +144,7 @@ namespace ToDoList
                     Title = inputTitle,
                     Description = inputDescription,
                     IsCompleted = inputIsCompleted,
-                    CreatedDate = inputDate,    
+                    CreatedDate = dateCreate,    
                     TaskType = inputTypeTask,
                 };
 
@@ -207,6 +209,25 @@ namespace ToDoList
             else
             {
                 Console.WriteLine("Task not found.");
+            }
+        }
+
+        public void SortTask()
+        {
+            Console.Write("1 - Sort by completed (true/false): ");
+            var sortCompleted = Convert.ToBoolean(Console.ReadLine());
+            var resultCompleted = _context.Tasks.Where(t => t.IsCompleted == sortCompleted).ToList();
+
+            if (resultCompleted.Any())
+            {
+                foreach(var task in resultCompleted)
+                {
+                    Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No completed tasks");
             }
         }
     }
