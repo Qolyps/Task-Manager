@@ -48,7 +48,7 @@ namespace ToDoList
                         isOpen = false;
                         break;
                     default:
-                        Console.WriteLine("Enter the correct command!");
+                        Console.WriteLine("Please enter a valid value.");
                         break;
                 }
                 Console.ReadKey();
@@ -124,6 +124,10 @@ namespace ToDoList
     public class ManagerTask
     {
         private ToDoContext _context = new ToDoContext();
+        private void GetInfoTask(TaskEntity task)
+        {
+            Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
+        }
 
         public async Task CreateTaskAsync()
         {
@@ -134,7 +138,13 @@ namespace ToDoList
                 Console.Write("Enter a description: ");
                 string inputDescription = Console.ReadLine();
                 Console.Write("Select the task status (true/false): ");
-                bool inputIsCompleted = Convert.ToBoolean(Console.ReadLine());
+                bool inputIsCompleted;
+
+                while (!bool.TryParse(Console.ReadLine(), out inputIsCompleted))
+                {
+                    Console.WriteLine("Please enter a valid boolean value (true/false)");
+                }
+
                 DateTime dateCreate = DateTime.Now;
                 Console.Write("Select the type task (0 - Personal / 1 - Team): ");
                 TypeTask inputTypeTask = (TypeTask)Enum.Parse(typeof(TypeTask), Console.ReadLine());
@@ -144,7 +154,7 @@ namespace ToDoList
                     Title = inputTitle,
                     Description = inputDescription,
                     IsCompleted = inputIsCompleted,
-                    CreatedDate = dateCreate,    
+                    CreatedDate = dateCreate,
                     TaskType = inputTypeTask,
                 };
 
@@ -178,12 +188,13 @@ namespace ToDoList
 
         public async Task ShowAllTasksAsync()
         {
+
             var tasks = await _context.Tasks.ToListAsync();
             if (tasks.Any())
             {
                 foreach (var task in tasks)
                 {
-                    Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
+                    GetInfoTask(task);
                 }
             }
             else
@@ -203,7 +214,7 @@ namespace ToDoList
             {
                 foreach (var task in resultTask)
                 {
-                    Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
+                    GetInfoTask(task);
                 }
             }
             else
@@ -214,26 +225,38 @@ namespace ToDoList
 
         public async Task SortTaskAsync()
         {
-            Console.Write("1 - Sort by completed (true/false): ");
-            var sortCompleted = Convert.ToBoolean(Console.ReadLine());
-            var resultCompleted =  await _context.Tasks.Where(t => t.IsCompleted == sortCompleted).ToListAsync();
-
-            if (resultCompleted.Any())
+            Console.WriteLine("1 - Sort by completed.");
+            Console.WriteLine("2 - Sort by type.");
+            Console.WriteLine("3 - Sort by date.");
+            Console.Write("Select the sort type: ");
+            var selectSort = Console.ReadLine();
+            switch (selectSort)
             {
-                foreach(var task in resultCompleted)
-                {
-                    Console.WriteLine($"\nID: {task.Id}\nTitle: {task.Title}\nDescription: {task.Description}\nCompleted: {task.IsCompleted}\nType: {task.TaskType}\nCreated: {task.CreatedDate}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("No completed tasks");
+                case "1":
+                    var sortIsCompleted = await _context.Tasks.OrderBy(t => t.IsCompleted).ToListAsync();
+                    foreach (var task in sortIsCompleted)
+                    {
+                        GetInfoTask(task);
+                    }
+                    break;
+                case "2":
+                    var sortType = await _context.Tasks.OrderBy(t => t.TaskType).ToListAsync();
+                    foreach (var task in sortType)
+                    {
+                        GetInfoTask(task);
+                    }
+                    break;
+                case "3":
+                    var sortDate = await _context.Tasks.OrderBy(t => t.CreatedDate).ToListAsync();
+                    foreach (var task in sortDate)
+                    {
+                        GetInfoTask(task);
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Please enter a valid value.");
+                    break;
             }
         }
     }
 }
-
-
-
-
-
