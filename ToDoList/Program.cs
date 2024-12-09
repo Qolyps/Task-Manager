@@ -47,7 +47,7 @@ namespace ToDoList
                         await manager.SortTaskAsync();
                         break;
                     case "6":
-                        manager.UpdateTask();
+                        await manager.UpdateTaskAsync();
                         break;
                     case "7":
                         isOpen = false;
@@ -275,12 +275,12 @@ namespace ToDoList
             }
         }
 
-        public void UpdateTask()
+        public async Task UpdateTaskAsync()
         {
             Console.Write("Enter the task ID for update: ");
             int inputID = Convert.ToInt32(Console.ReadLine());
 
-            var taskUpdate = _context.Tasks.Find(inputID);
+            var taskUpdate = await _context.Tasks.FindAsync(inputID);
 
             if (taskUpdate == null)
             {
@@ -323,14 +323,14 @@ namespace ToDoList
 
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 Console.WriteLine("The task has been update successfully.");
             }
             catch (DbUpdateException ex)
             {
                 Console.WriteLine($"Error updating task: {ex.Message}");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine("Error: " + ex.Message);
             }
