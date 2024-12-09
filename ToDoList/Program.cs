@@ -25,7 +25,8 @@ namespace ToDoList
                 Console.WriteLine("3 - Show all tasks.");
                 Console.WriteLine("4 - Find a task.");
                 Console.WriteLine("5 - Sort tasks.");
-                Console.WriteLine("6 - Exit.");
+                Console.WriteLine("6 - Update the task.");
+                Console.WriteLine("7 - Exit.");
                 Console.Write("\nSelect the command: ");
                 string userInput = Console.ReadLine();
                 switch (userInput)
@@ -46,6 +47,9 @@ namespace ToDoList
                         await manager.SortTaskAsync();
                         break;
                     case "6":
+                        manager.UpdateTask();
+                        break;
+                    case "7":
                         isOpen = false;
                         break;
                     default:
@@ -132,40 +136,40 @@ namespace ToDoList
 
         public async Task CreateTaskAsync()
         {
+            Console.Write("\nEnter a title: ");
+            string inputTitle = Console.ReadLine();
+            if (string.IsNullOrEmpty(inputTitle))
+            {
+                Console.WriteLine("Title cannot be empty.");
+                return;
+            }
+
+            Console.Write("Enter a description: ");
+            string inputDescription = Console.ReadLine();
+
+            Console.Write("Select the task status (true/false): ");
+            bool inputIsCompleted;
+
+            while (!bool.TryParse(Console.ReadLine(), out inputIsCompleted))
+            {
+                Console.WriteLine("Please enter a valid boolean value (true/false)");
+            }
+
+            DateTime dateCreate = DateTime.Now;
+            Console.Write("Select the type task (0 - Personal / 1 - Team): ");
+            TypeTask inputTypeTask = (TypeTask)Enum.Parse(typeof(TypeTask), Console.ReadLine());
+
+            TaskEntity newTask = new TaskEntity
+            {
+                Title = inputTitle,
+                Description = inputDescription,
+                IsCompleted = inputIsCompleted,
+                CreatedDate = dateCreate,
+                TaskType = inputTypeTask,
+            };
+
             try
             {
-                Console.Write("\nEnter a title: ");
-                string inputTitle = Console.ReadLine();
-                if (string.IsNullOrEmpty(inputTitle))
-                {
-                    Console.WriteLine("Title cannot be empty.");
-                    return;
-                }
-
-                Console.Write("Enter a description: ");
-                string inputDescription = Console.ReadLine();
-
-                Console.Write("Select the task status (true/false): ");
-                bool inputIsCompleted;
-
-                while (!bool.TryParse(Console.ReadLine(), out inputIsCompleted))
-                {
-                    Console.WriteLine("Please enter a valid boolean value (true/false)");
-                }
-
-                DateTime dateCreate = DateTime.Now;
-                Console.Write("Select the type task (0 - Personal / 1 - Team): ");
-                TypeTask inputTypeTask = (TypeTask)Enum.Parse(typeof(TypeTask), Console.ReadLine());
-
-                TaskEntity newTask = new TaskEntity
-                {
-                    Title = inputTitle,
-                    Description = inputDescription,
-                    IsCompleted = inputIsCompleted,
-                    CreatedDate = dateCreate,
-                    TaskType = inputTypeTask,
-                };
-
                 _context.Tasks.Add(newTask);
                 await _context.SaveChangesAsync();
                 Console.WriteLine("The task has been created.");
@@ -176,7 +180,7 @@ namespace ToDoList
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");  
+                Console.WriteLine($"Error: {ex.Message}");
             }
         }
 
@@ -268,6 +272,67 @@ namespace ToDoList
                 default:
                     Console.WriteLine("Please enter a valid value.");
                     break;
+            }
+        }
+
+        public void UpdateTask()
+        {
+            Console.Write("Enter the task ID for update: ");
+            int inputID = Convert.ToInt32(Console.ReadLine());
+
+            var taskUpdate = _context.Tasks.Find(inputID);
+
+            if (taskUpdate == null)
+            {
+                Console.WriteLine("Task not found.");
+                return;
+            }
+
+            Console.WriteLine($"\nCurrent title: {taskUpdate.Title}");
+            Console.WriteLine($"Current description: {taskUpdate.Description}");
+            Console.WriteLine($"Current completed: {taskUpdate.IsCompleted}");
+            Console.WriteLine($"Current type: {taskUpdate.TaskType}");
+
+            Console.Write("Enter a new title (or press Enter for keep current): ");
+            string newTitle = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newTitle))
+            {
+                taskUpdate.Title = newTitle;
+            }
+
+            Console.Write("Enter a new description (or press Enter for keep current): ");
+            string newDescription = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newDescription))
+            {
+                taskUpdate.Description = newDescription;
+            }
+
+            Console.Write("Enter a new status (true/false) (or press Enter for keep current): ");
+            string newStatus = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newStatus) && bool.TryParse(newStatus, out bool inputIsCompleted))
+            {
+                taskUpdate.IsCompleted = inputIsCompleted;
+            }
+
+            Console.Write("Enter new task type (0 - Personal / 1 - Team) (or press Enter for keep current): ");
+            string newType = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newType))
+            {
+                taskUpdate.TaskType = (TypeTask)Enum.Parse(typeof(TypeTask), newType);
+            }
+
+            try
+            {
+                _context.SaveChanges();
+                Console.WriteLine("The task has been update successfully.");
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Error updating task: {ex.Message}");
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine("Error: " + ex.Message);
             }
         }
     }
