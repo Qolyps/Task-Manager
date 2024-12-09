@@ -135,8 +135,14 @@ namespace ToDoList
             {
                 Console.Write("\nEnter a title: ");
                 string inputTitle = Console.ReadLine();
+                if(string.IsNullOrEmpty(inputTitle))
+                {
+                    Console.WriteLine("Title cannot be empty.");
+                }
+
                 Console.Write("Enter a description: ");
                 string inputDescription = Console.ReadLine();
+
                 Console.Write("Select the task status (true/false): ");
                 bool inputIsCompleted;
 
