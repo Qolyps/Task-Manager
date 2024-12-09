@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 
 namespace ToDoList
 {
@@ -135,9 +136,10 @@ namespace ToDoList
             {
                 Console.Write("\nEnter a title: ");
                 string inputTitle = Console.ReadLine();
-                if(string.IsNullOrEmpty(inputTitle))
+                if (string.IsNullOrEmpty(inputTitle))
                 {
                     Console.WriteLine("Title cannot be empty.");
+                    return;
                 }
 
                 Console.Write("Enter a description: ");
@@ -168,9 +170,13 @@ namespace ToDoList
                 await _context.SaveChangesAsync();
                 Console.WriteLine("The task has been created.");
             }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Error: {ex.Message}");  
             }
         }
 
